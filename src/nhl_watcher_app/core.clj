@@ -174,7 +174,6 @@
                 away-score " - " home-score "  "
                 status))))
 
-
 (defn pprint-event
     [event]
     (game-event-string event))
@@ -335,9 +334,14 @@
 "I don't do a whole lot ... yet."
     [& args]
     ;(println "Hello, World!")
-    (let [scr (s/get-screen :text)
-        date (t/minus (t/now) (t/days 1))
-        games (games-for-date date)]
+    (let [args (set args)
+          screen-type (cond
+                        (args ":swing") :swing
+                        (args ":text")  :text
+                        :else           :auto)
+          scr (s/get-screen screen-type)
+          date (t/minus (t/now) (t/days 1))
+          games (games-for-date date)]
         (s/in-screen scr
             (s/move-cursor scr (map #(- % 1) (s/get-size scr)))
             (main-loop 
