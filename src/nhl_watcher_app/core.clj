@@ -108,7 +108,6 @@
   (let [date-string (time/format "yyyy-MM-dd" date)
         url (str base-url schedule-path "?startDate=" date-string "&endDate=" date-string "&expand=schedule.linescore")
         raw-json-games (get-in (json/read-str (:body (client/get url)) :key-fn #(keyword %)) [:dates 0 :games])]
-    ;(println url)
     (games-from-raw raw-json-games)))
 
 (defn get-game-events
@@ -118,12 +117,10 @@
     (number? game) ; it's a game-id
       (let [url (str base-url event-path game event-path-post)
             raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
-            ;(println url)
         (get-in raw-feed [:liveData :plays :allPlays]))
     (contains? game :live-feed-path) ; it's a game object
       (let [url (str base-url (:live-feed-path game))
           raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
-          ;(println url)
         (get-in raw-feed [:liveData :plays :allPlays]))))
 
 
@@ -229,7 +226,7 @@
             (s/clear scr)
             (clear-row scr 0 header)
             (clear-row scr highlight-row highlight)
-            (s/put-string scr 0 (- (second (s/get-size scr)) 1) (str "Auto-update (*), last updated " (- 60 time-to-update) "s ago"))
+            (s/put-string scr 0 (- (second (s/get-size scr)) 1) (str "Last updated " (- 60 time-to-update) "s ago"))
             (if (nil? detail-game)
                 (draw-score-screen scr display-info)
                 (draw-events-screen scr display-info))
@@ -272,7 +269,6 @@
                 (let [current-game (nth games (- highlight-row 1))
                     game-events (get-game-events current-game)
                     max-event-index (count game-events)]
-                    ;(println "Current game: " (pprint-score-statline current-game false))
                     (assoc display-info
                         :time-to-update 60
                         :detail-game current-game 
