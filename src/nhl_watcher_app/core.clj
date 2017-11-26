@@ -1,41 +1,41 @@
 (ns nhl-watcher-app.core
   (:gen-class))
-  (require '[clojure.data.json :as json])
-  (require '[clj-http.client :as client])
-  (require '[java-time :as time])
-  (require '[lanterna.screen :as s])
-  
-  (def teams {"New Jersey Devils" "Devils", 
-    "New York Islanders" "Islanders", 
-    "New York Rangers" "Rangers", 
-    "Philadelphia Flyers" "Flyers", 
-    "Pittsburgh Penguins" "Penguins", 
-    "Boston Bruins" "Bruins", 
-    "Buffalo Sabres" "Sabres", 
-    "Montréal Canadiens" "Canadiens", 
-    "Ottawa Senators" "Senators", 
-    "Toronto Maple Leafs" "Maple Leafs", 
-    "Carolina Hurricanes" "Hurricanes", 
-    "Florida Panthers" "Panthers", 
-    "Tampa Bay Lightning" "Lightning", 
-    "Washington Capitals" "Capitals", 
-    "Chicago Blackhawks" "Blackhawks", 
-    "Detroit Red Wings" "Red Wings", 
-    "Nashville Predators" "Predators", 
-    "St. Louis Blues" "Blues", 
-    "Calgary Flames" "Flames", 
-    "Colorado Avalanche" "Avalanche", 
-    "Edmonton Oilers" "Oilers", 
-    "Vancouver Canucks" "Canucks", 
-    "Anaheim Ducks" "Ducks", 
-    "Dallas Stars" "Stars", 
-    "Los Angeles Kings" "Kings", 
-    "San Jose Sharks" "Sharks", 
-    "Columbus Blue Jackets" "Blue Jackets", 
-    "Minnesota Wild" "Wild", 
-    "Winnipeg Jets" "Jets", 
-    "Arizona Coyotes" "Coyotes", 
-    "Vegas Golden Knights" "Golden Knights"})
+(require '[clojure.data.json :as json])
+(require '[clj-http.client :as client])
+(require '[java-time :as time])
+(require '[lanterna.screen :as s])
+
+(def teams {"New Jersey Devils" "Devils", 
+            "New York Islanders" "Islanders", 
+            "New York Rangers" "Rangers", 
+            "Philadelphia Flyers" "Flyers", 
+            "Pittsburgh Penguins" "Penguins", 
+            "Boston Bruins" "Bruins", 
+            "Buffalo Sabres" "Sabres", 
+            "Montréal Canadiens" "Canadiens", 
+            "Ottawa Senators" "Senators", 
+            "Toronto Maple Leafs" "Maple Leafs", 
+            "Carolina Hurricanes" "Hurricanes", 
+            "Florida Panthers" "Panthers", 
+            "Tampa Bay Lightning" "Lightning", 
+            "Washington Capitals" "Capitals", 
+            "Chicago Blackhawks" "Blackhawks", 
+            "Detroit Red Wings" "Red Wings", 
+            "Nashville Predators" "Predators", 
+            "St. Louis Blues" "Blues", 
+            "Calgary Flames" "Flames", 
+            "Colorado Avalanche" "Avalanche", 
+            "Edmonton Oilers" "Oilers", 
+            "Vancouver Canucks" "Canucks", 
+            "Anaheim Ducks" "Ducks", 
+            "Dallas Stars" "Stars", 
+            "Los Angeles Kings" "Kings", 
+            "San Jose Sharks" "Sharks", 
+            "Columbus Blue Jackets" "Blue Jackets", 
+            "Minnesota Wild" "Wild", 
+            "Winnipeg Jets" "Jets", 
+            "Arizona Coyotes" "Coyotes", 
+            "Vegas Golden Knights" "Golden Knights"})
 
 (def base-url "https://statsapi.web.nhl.com")
 (def schedule-path "/api/v1/schedule")
@@ -339,7 +339,7 @@
             scr 
             (process-key-input 
                 (s/get-key-blocking scr {:timeout (* 1000 (:time-to-update display-info))}) 
-                (assoc display-info :max-rows (- (second (s/get-size scr)) 2))))))
+                (assoc display-info :max-rows (- (second (s/get-size scr)) 5))))))
 
 (defn -main
 "I don't do a whole lot ... yet."
