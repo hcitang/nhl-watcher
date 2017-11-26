@@ -162,18 +162,17 @@
     [game print-leading-spaces]
     (let [home (:home-team game)
           away (:away-team game)
-          home-score (:home-team-score game)
-          away-score (:away-team-score game)
+          teams (str away " @ " home)
+          score (str (:away-team-score game) " - " (:home-team-score game))
           status (get-game-progress game)
-          leading-spaces (- 26 (+ (count home) (count away)))]
-          (if (true? print-leading-spaces)
-            (str (apply str (repeat leading-spaces \space))
-                away " @ " home " "
-                away-score " - " home-score "  "
-                status)
-            (str away " @ " home " "
-                away-score " - " home-score "  "
-                status))))
+          leading-space-count (- 26 (+ (count home) (count away)))
+          leading-spaces (if (true? print-leading-spaces)
+                            (str (apply str (repeat leading-space-count \space)))
+                            "")]
+        (println leading-space-count print-leading-spaces)
+        (if (scheduled? game) 
+            (str teams "  " status)
+            (str teams " " score "  " status))))
 
 (defn pprint-event
     [event]
