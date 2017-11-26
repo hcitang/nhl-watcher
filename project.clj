@@ -7,7 +7,8 @@
     [org.clojure/data.json "0.2.6"]
     [clj-http "3.7.0"]
     [clojure-lanterna "0.9.7"]
-    [clojure.java-time "0.3.0"]
+    ;[clojure.java-time "0.3.0"]
+    [clj-time "0.14.2"]
     ]
   :main ^:skip-aot nhl-watcher-app.core
   :target-path "target/%s"
