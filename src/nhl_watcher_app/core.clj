@@ -79,7 +79,7 @@
   (cond
     (in-progress? game) (show-time-remaining game)
     (game-over? game) (game-final-type game)
-    (scheduled? game) (str (:status game) ": " (l/format-local-time (:start-time game) :hour-minute))
+    (scheduled? game) (str (:status game) " (" (l/format-local-time (:start-time game) :hour-minute) ")")
     :else (:status game)))
     
 (defn game-from-raw
@@ -169,10 +169,9 @@
           leading-spaces (if (true? print-leading-spaces)
                             (str (apply str (repeat leading-space-count \space)))
                             "")]
-        (println leading-space-count print-leading-spaces)
         (if (scheduled? game) 
-            (str teams "  " status)
-            (str teams " " score "  " status))))
+            (str leading-spaces teams "  " status)
+            (str leading-spaces teams " " score "  " status))))
 
 (defn pprint-event
     [event]
