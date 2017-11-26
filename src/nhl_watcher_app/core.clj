@@ -4,6 +4,7 @@
 (require '[clj-http.client :as client])
 (require '[clj-time.core :as t])
 (require '[clj-time.format :as f])
+(require '[clj-time.local :as l])
 (require '[lanterna.screen :as s])
 
 (def teams {"New Jersey Devils" "Devils", 
@@ -44,6 +45,11 @@
 (def event-path-post "/feed/live")
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
+(def custom-time-formatter (f/formatter "HH:mm"))
+
+(defn scheduled?
+    [game]
+    (= "Scheduled" (:status game)))
 
 (defn in-progress?
   [game]
@@ -73,20 +79,14 @@
   (cond
     (in-progress? game) (show-time-remaining game)
     (game-over? game) (game-final-type game)
+    (scheduled? game) (str (:status game) ": " (l/format-local-time (:start-time game) :hour-minute))
     :else (:status game)))
-
-(defn get-game-line
-  [game]
-  (cond 
-    (in-progress? game) (str (:away-team game) " " (:away-team-score game) "\t" (:home-team game) " " (:home-team-score game) "\t" (show-time-remaining game))
-    (game-over? game) (str (:away-team game) " " (:away-team-score game) "\t" (:home-team game) " " (:home-team-score game) "\t" (game-final-type game))
-    :else (str (:away-team game) "\t" (:home-team game) "\t" (:status game))))
-
+    
 (defn game-from-raw
   "Converts the raw map from the feed (clojure map), and converts it to a flatter map"
   [raw-game-info]
   (zipmap
-    [:away-team :away-team-score :home-team :home-team-score :status :live-feed-path :id :current-period-time-remaining :current-period-ordinal :periods]
+    [:away-team :away-team-score :home-team :home-team-score :status :live-feed-path :id :current-period-time-remaining :current-period-ordinal :periods :start-time]
     [(teams (get-in raw-game-info [:teams :away :team :name]))
       (get-in raw-game-info [:teams :away :score])
       (teams (get-in raw-game-info [:teams :home :team :name]))
@@ -97,6 +97,7 @@
       (get-in raw-game-info [:linescore :currentPeriodTimeRemaining])
       (get-in raw-game-info [:linescore :currentPeriodOrdinal])
       (get-in raw-game-info [:linescore :periods])
+      (get-in raw-game-info [:gameDate])
     ]))
 
 (defn games-from-raw
