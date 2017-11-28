@@ -1,0 +1,5 @@
+- boxscore
+- turn on/off auto-updating
+- highlight certain teams
+- make sure i don't scroll off the eventslist
+- if i don't have any new events, no need to move me to the top of the event screen if there are no new events
