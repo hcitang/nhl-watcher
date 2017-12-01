@@ -303,13 +303,14 @@
 
 (defn main-loop
     [scr display-info]
-    (recur 
-        scr
-        (draw-screen 
-            scr 
-            (process-key-input 
-                (s/get-key-blocking scr {:timeout 1000}) 
-                (assoc display-info :max-rows (- (second (s/get-size scr)) 5))))))
+    (if-not (nil? display-info)
+        (recur 
+            scr
+            (draw-screen 
+                scr 
+                (process-key-input 
+                    (s/get-key-blocking scr {:timeout 1000}) 
+                    (assoc display-info :max-rows (- (second (s/get-size scr)) 5)))))))
 
 (defn -main
 "I don't do a whole lot ... yet."
