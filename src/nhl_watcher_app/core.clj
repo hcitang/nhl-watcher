@@ -123,7 +123,7 @@
         (get-in raw-feed [:liveData :plays :allPlays]))
     (contains? game :live-feed-path) ; it's a game object
       (let [url (str base-url (:live-feed-path game))
-          raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
+            raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
         (get-in raw-feed [:liveData :plays :allPlays]))))
 
 
@@ -146,7 +146,6 @@
     :else (str (:ordinalNum about) " " (:periodTimeRemaining about) ": " triCode " " decorated-event ": " (:description result)))))
 ; 👊 hit
 ; :team :triCode
-
 
 (def header {:fg :white, :bg :blue})
 (def highlight {:fg :black, :bg :white})
@@ -208,15 +207,34 @@
                         (rest game-events-to-show)
                         (inc draw-row)))))))
 
+(defn pprint-time-elapsed
+    [interval]
+    (let [days (t/in-days interval)
+          hours (t/in-hours interval)
+          minutes (t/in-minutes interval)
+          seconds (t/in-seconds interval)]
+        (cond 
+            (> days 1) (format "%s days ago" days)
+            (> days 0) (format "%s day ago" days)
+            (> hours 1) (format "%s hours ago" hours)
+            (> hours 0) (format "%s hour ago" hours)
+            (> minutes 1) (format "%s mins ago" minutes)
+            (> minutes 0) (format "%s min ago" minutes)
+            (> seconds 1) (format "%s seconds ago" seconds)
+            (> seconds 0) (format "%s second ago" seconds)
+            :else "just now")))
+
 (defn draw-screen
     [scr display-info]
-    (if (nil? display-info) 
-        nil
-        (let [{:keys [:highlight-row :last-update-time :detail-game]} display-info]
+    (if-not (nil? display-info) 
+        (let [{:keys [:highlight-row :last-update-time :detail-game :auto-update?]} display-info
+              bottom-row (- (second (s/get-size scr)) 1)
+              auto-update-star (if auto-update? "*")
+              time-elapsed (pprint-time-elapsed (t/interval last-update-time (t/now)))]
             (s/clear scr)
             (clear-row scr 0 header)
             (clear-row scr highlight-row highlight)
-            (s/put-string scr 0 (- (second (s/get-size scr)) 1) (str "Last updated " (t/in-seconds (t/interval last-update-time (t/now))) "s ago"))
+            (s/put-string scr 0 bottom-row (str auto-update-star "Last updated " time-elapsed))
             (if (nil? detail-game)
                 (draw-score-screen scr display-info)
                 (draw-events-screen scr display-info))
@@ -225,7 +243,7 @@
 
 (defn process-key-input-scores-view
     [key display-info]
-    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time]} display-info
+    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time :auto-update?]} display-info
           time-since-last-update (t/in-seconds (t/interval last-update-time (t/now)))]
         (cond ; in scores view
             (and (or (= key :up) (= key \k)) (> highlight-row 1)) 
@@ -238,12 +256,14 @@
             (or (= key :right) (= key \l))
                 (assoc display-info :date (t/plus date (t/days 1)) :highlight-row 1
                     :games (games-for-date (t/plus date (t/days 1))))
-            (or (= key \r) (> time-since-last-update 60))
+            (or (= key \r) (and (> time-since-last-update 60) auto-update?))
                 (assoc display-info :games (games-for-date date) :last-update-time (t/now))
             (= key \t)
                 (assoc display-info :date (t/now) :games (games-for-date (t/now)) :last-update-time (t/now))
             (= key \q)
                 nil
+            (= key \a)
+                (assoc display-info :auto-update? (not auto-update?))
             (= key :enter)
                 (let [current-game (nth games (- highlight-row 1))
                     game-events (get-game-events current-game)
@@ -259,7 +279,7 @@
 
 (defn process-key-input-game-detail-view
     [key display-info]
-    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time]} display-info
+    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time :auto-update?]} display-info
           time-since-last-update (t/in-seconds (t/interval last-update-time (t/now)))]
         (cond ; in game event view
             (or (= key :escape) (= key \t) (= key \u))
@@ -273,13 +293,15 @@
                     (if (< highlight-row max-rows)
                         (assoc display-info :highlight-row (+ highlight-row 1)) ; TODO: make sure we don't go beyond what number of event lines we have
                         (assoc display-info :max-event-index (dec max-event-index))))
-            (or (= key \r) (> time-since-last-update 60))
+            (or (= key \r) (and (> time-since-last-update 60) auto-update?))
                 (let [game-events (get-game-events detail-game)
                     max-event-index (count game-events)
                     games (games-for-date date)]
                     (assoc display-info :game-events game-events :max-event-index max-event-index :last-update-time (t/now) :highlight-row 1 :games (games-for-date date)))
             (= key \q)
                 nil
+            (= key \a)
+                (assoc display-info :auto-update? (not auto-update?))
             :else 
                 display-info)))
 
@@ -328,7 +350,7 @@
             (s/move-cursor scr (map #(- % 1) (s/get-size scr)))
             (main-loop 
                 scr
-                {:highlight-row 1, :date date, :games games, :detail-game nil, :last-update-time (t/now)}))))
+                {:highlight-row 1, :date date, :games games, :detail-game nil, :last-update-time (t/now), :auto-update? true}))))
 
 ;(t/in-seconds (t/interval earlier (t/now)))
 
