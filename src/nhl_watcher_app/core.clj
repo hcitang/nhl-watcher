@@ -138,8 +138,7 @@
 
 (defn game-event-string
   [event]
-  (let [about (:about event)
-        result (:result event)
+  (let [{:keys [:about :result]} event
         triCode (if (contains? event :team) (get-in event [:team :triCode]) "")
         decorated-event (decorated-event-string event)]
   (cond
@@ -160,12 +159,11 @@
 
 (defn pprint-score-statline
     [game print-leading-spaces]
-    (let [home (:home-team game)
-          away (:away-team game)
-          teams (str away " @ " home)
-          score (str (:away-team-score game) " - " (:home-team-score game))
+    (let [{:keys [:home-team :away-team :home-team-score :away-team-score]} game
+          teams (str away-team " @ " home-team)
+          score (str away-team-score " - " home-team-score)
           status (get-game-progress game)
-          leading-space-count (- 26 (+ (count home) (count away)))
+          leading-space-count (- 26 (+ (count home-team) (count away-team)))
           leading-spaces (if (true? print-leading-spaces)
                             (str (apply str (repeat leading-space-count \space)))
                             "")]
@@ -179,50 +177,42 @@
 
 (defn draw-score-screen
     [scr display-info]
-    (let [highlight-row (:highlight-row display-info)
-            date (:date display-info)
-            games (:games display-info)]
-            (s/put-string scr 0 0 (str "NHL Scores for " (f/unparse custom-formatter date)) header)
-            (loop [games games
-                draw-row 1]
-                (if (empty? games)
-                        nil
-                        (do
-                            (if (= highlight-row draw-row)
-                                (s/put-string scr 3 draw-row (pprint-score-statline (first games) true) highlight)
-                                (s/put-string scr 3 draw-row (pprint-score-statline (first games) true)))
-                            (recur
-                                (rest games)
-                                (inc draw-row)))))))
+    (let [{:keys [:highlight-row :date :games]} display-info]
+        (s/put-string scr 0 0 (str "NHL Scores for " (f/unparse custom-formatter date)) header)
+        (loop [games games
+               draw-row 1]
+            (if (empty? games)
+                nil
+                (do
+                    (if (= highlight-row draw-row)
+                        (s/put-string scr 3 draw-row (pprint-score-statline (first games) true) highlight)
+                        (s/put-string scr 3 draw-row (pprint-score-statline (first games) true)))
+                    (recur
+                        (rest games)
+                        (inc draw-row)))))))
 
 (defn draw-events-screen
     [scr display-info]
-    (let [highlight-row (:highlight-row display-info)
-            date (:date display-info)
-            max-rows (- (second (s/get-size scr)) 2)
-            max-event-index (:max-event-index display-info)
-            detail-game (:detail-game display-info)
-            game-events (:game-events display-info)]
+    (let [{:keys [:highlight-row :date :max-event-index :detail-game :game-events]} display-info
+            max-rows (- (second (s/get-size scr)) 2)]
         (s/put-string scr 0 0 (str (f/unparse custom-formatter date) ": " (pprint-score-statline detail-game false)) header)
         (loop [game-events-to-show (take max-rows (reverse (filter #(>= max-event-index (get-in % [:about :eventIdx])) game-events)))
-                draw-row 1]
-                (if (empty? game-events-to-show)
-                    nil
-                    (do
-                        (if (= highlight-row draw-row)
-                            (s/put-string scr 3 draw-row (pprint-event (first game-events-to-show)) highlight)
-                            (s/put-string scr 3 draw-row (pprint-event (first game-events-to-show))))
-                        (recur
-                            (rest game-events-to-show)
-                            (inc draw-row)))))))
+               draw-row 1]
+            (if (empty? game-events-to-show)
+                nil
+                (do
+                    (if (= highlight-row draw-row)
+                        (s/put-string scr 3 draw-row (pprint-event (first game-events-to-show)) highlight)
+                        (s/put-string scr 3 draw-row (pprint-event (first game-events-to-show))))
+                    (recur
+                        (rest game-events-to-show)
+                        (inc draw-row)))))))
 
 (defn draw-screen
     [scr display-info]
     (if (nil? display-info) 
         nil
-        (let [highlight-row (:highlight-row display-info)
-              last-update-time (:last-update-time display-info)
-            detail-game (:detail-game display-info)]
+        (let [{:keys [:highlight-row :last-update-time :detail-game]} display-info]
             (s/clear scr)
             (clear-row scr 0 header)
             (clear-row scr highlight-row highlight)
@@ -235,12 +225,8 @@
 
 (defn process-key-input-scores-view
     [key display-info]
-    (let [date (:date display-info)
-          games (:games display-info)
-          highlight-row (:highlight-row display-info)
-          time-since-last-update (t/in-seconds (t/interval (:last-update-time display-info) (t/now)))
-          detail-game (:detail-game display-info)
-          max-event-index (:max-event-index display-info)]
+    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time]} display-info
+          time-since-last-update (t/in-seconds (t/interval last-update-time (t/now)))]
         (cond ; in scores view
             (and (or (= key :up) (= key \k)) (> highlight-row 1)) 
                 (assoc display-info :highlight-row (- highlight-row 1))
@@ -273,12 +259,8 @@
 
 (defn process-key-input-game-detail-view
     [key display-info]
-    (let [date (:date display-info)
-        games (:games display-info)
-        time-since-last-update (t/in-seconds (t/interval (:last-update-time display-info) (t/now)))
-        highlight-row (:highlight-row display-info)
-        detail-game (:detail-game display-info)
-        max-event-index (:max-event-index display-info)]
+    (let [{:keys [:date :games :highlight-row :detail-game :max-event-index :last-update-time]} display-info
+          time-since-last-update (t/in-seconds (t/interval last-update-time (t/now)))]
         (cond ; in game event view
             (or (= key :escape) (= key \t) (= key \u))
                 (assoc display-info :highlight-row 1 :detail-game nil) ; TODO: search through games to highlight the one I was looking at
