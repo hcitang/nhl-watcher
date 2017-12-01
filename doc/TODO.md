@@ -3,3 +3,6 @@
 - highlight certain teams
 - make sure i don't scroll off the eventslist
 - if i don't have any new events, no need to move me to the top of the event screen if there are no new events
+- spacebar/pageup/pagedown for scrolling events
+- eventlist: make sure to update the game score bar
+- eventlist: filter by goals, hits, penalties?
