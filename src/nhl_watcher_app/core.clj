@@ -124,6 +124,7 @@
     (contains? game :live-feed-path) ; it's a game object
       (let [url (str base-url (:live-feed-path game))
             raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
+            (println url)
         (get-in raw-feed [:liveData :plays :allPlays]))))
 
 
@@ -351,7 +352,3 @@
             (main-loop 
                 scr
                 {:highlight-row 1, :date date, :games games, :detail-game nil, :last-update-time (t/now), :auto-update? true}))))
-
-;(t/in-seconds (t/interval earlier (t/now)))
-
-;(f/unparse custom-formatter (t/now))
