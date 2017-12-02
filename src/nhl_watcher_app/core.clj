@@ -124,9 +124,7 @@
     (contains? game :live-feed-path) ; it's a game object
       (let [url (str base-url (:live-feed-path game))
             raw-feed (json/read-str (:body (client/get url)) :key-fn #(keyword %))]
-            (println url)
         (get-in raw-feed [:liveData :plays :allPlays]))))
-
 
 (defn decorated-event-string
   [event]
