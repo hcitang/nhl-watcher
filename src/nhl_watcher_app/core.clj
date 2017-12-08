@@ -1,11 +1,13 @@
 (ns nhl-watcher-app.core
-  (:gen-class))
+  (:gen-class)
+  (:require [nhl-lib.core :as nhl]))
 (require '[clojure.data.json :as json])
 (require '[clj-http.client :as client])
 (require '[clj-time.core :as t])
 (require '[clj-time.format :as f])
 (require '[clj-time.local :as l])
 (require '[lanterna.screen :as s])
+
 
 (def teams {"New Jersey Devils" "Devils", 
             "New York Islanders" "Islanders", 
